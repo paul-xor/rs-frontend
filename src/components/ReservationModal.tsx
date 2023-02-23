@@ -1,4 +1,4 @@
-import { Modal, Typography, Box, Grid, TextField, Stack } from '@mui/material';
+import { Modal, Typography, Box, Grid, TextField, Stack, Chip, Switch } from '@mui/material';
 import { Reservation } from './types';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -25,7 +25,11 @@ const ReservationModal: React.FC<ReservationModalProps> = ({ reservation, open, 
     addressStreet,
     addressLocation,
     extras,
-    payment
+    payment,
+    note,
+    tags,
+    reminder,
+    newsletter,
    } = reservation;
 
   return (
@@ -105,6 +109,30 @@ const ReservationModal: React.FC<ReservationModalProps> = ({ reservation, open, 
                 </Grid>
               </Grid>
               <FourRadioButtons value={payment}/>
+              <Grid item xs={6}>
+                <TextField label="Personal Note" value={note} />
+              </Grid>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', '& > *': { my: 0.5 } }}>
+                {tags?.map((tag) => (
+                  <Chip key={tag} label={tag} />
+                ))}
+              </Box>
+              <Grid container item spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="body1">Send me a reminder</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Switch checked={reminder} />
+                </Grid>
+              </Grid>
+              <Grid container item spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="body1">Subscribe to newsletter</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Switch checked={newsletter} />
+                </Grid>
+              </Grid>
             </Stack>
           </LocalizationProvider>
         </div>
