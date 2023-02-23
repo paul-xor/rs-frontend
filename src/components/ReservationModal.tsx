@@ -3,6 +3,7 @@ import { Reservation } from './types';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import FourRadioButtons from './FourRadioButtons';
 
 interface ReservationModalProps {
   open: boolean;
@@ -23,7 +24,8 @@ const ReservationModal: React.FC<ReservationModalProps> = ({ reservation, open, 
     phone,
     addressStreet,
     addressLocation,
-    extras
+    extras,
+    payment
    } = reservation;
 
   return (
@@ -102,7 +104,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({ reservation, open, 
                   <TextField label="Extras" value={extras} />
                 </Grid>
               </Grid>
-
+              <FourRadioButtons value={payment}/>
             </Stack>
           </LocalizationProvider>
         </div>
