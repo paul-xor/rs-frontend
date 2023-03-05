@@ -1,11 +1,12 @@
 import { FormControl, FormControlLabel, Radio, RadioGroup, Grid } from '@mui/material';
+import React from 'react';
 
-interface FourRadioButtonsProps {
-  value: string | undefined;
+interface RecRadioButtonsProps {
+  value: string;
   onChange?: (newValue: string) => void;
 }
 
-const RecRadioButtons: React.FC<FourRadioButtonsProps> = ({ value, onChange }) => {
+const RecRadioButtons: React.FC<RecRadioButtonsProps> = ({ value, onChange }) => {
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) onChange(event.target.value);
   };
@@ -15,10 +16,10 @@ const RecRadioButtons: React.FC<FourRadioButtonsProps> = ({ value, onChange }) =
       <RadioGroup value={value} onChange={handleRadioChange}>
         <Grid container spacing={2}>
           <Grid item xs={6} sm={3}>
-            <FormControlLabel value="first_name" control={<Radio />} label="First Name" />
+            <FormControlLabel value="firstName" control={<Radio />} label="First Name" />
           </Grid>
           <Grid item xs={6} sm={3}>
-            <FormControlLabel value="last_name" control={<Radio />} label="Last Name" />
+            <FormControlLabel value="lastName" control={<Radio />} label="Last Name" />
           </Grid>
           <Grid item xs={6} sm={3}>
             <FormControlLabel value="email" control={<Radio />} label="Email" />

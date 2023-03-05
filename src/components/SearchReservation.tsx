@@ -15,19 +15,22 @@ import {
 import { ReservationApi } from './types';
 // import dataHardCoded from '../data/reservations.json';
 import ReservationModal from './ReservationModal';
+import RecRadioButtons from './RecRadioButtons';
 
 const API_URL_READ = 'https://2wrdmmy1m7.execute-api.us-east-1.amazonaws.com/prod/read'
+const API_URL_SERCH = 'https://33ye23ukr3.execute-api.us-east-1.amazonaws.com/prod/search/'
 
 const SearchReservation: React.FC = () => {
   const [data, setData] = useState<ReservationApi[]| null>([]);
   const [init, setInit] = useState<boolean>(true);
-  const [loading, setLoading] = useState(false);
+  const [criteria, setCriteria] = useState('firstName');
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchResults, setSearchResults] = useState<ReservationApi[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<ReservationApi | null>(null);
   const [open, setOpen] = useState(false)
   const [{ response, isLoading, error }, doFetch]: UseFetchReturn = useFetch(API_URL_READ);
+
 
   useEffect (() => {
     if(init) {
@@ -44,12 +47,6 @@ const SearchReservation: React.FC = () => {
     }
   }, [response, isLoading])
 
-  useEffect(() => {
-    // console.log('## searchTerm', searchTerm)
-  }, [searchTerm])
-
-  console.log('## hook:', response, isLoading, error);
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -58,12 +55,33 @@ const SearchReservation: React.FC = () => {
     return null;
   }
 
+  const handleCriteriaChange = (newValue: string) => {
+    setCriteria(newValue);
+  };
+
   const handleSearch = () => {
-    const results = data.filter(
-      (reservation) =>
-        reservation.first_name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setSearchResults(results);
+    // console.log('## criteria: ', criteria)
+    switch (criteria) {
+      case 'firstName':
+        console.log('### ', searchTerm, criteria);
+        break;
+      case 'lastName':
+        console.log('### ', searchTerm, criteria);
+        break;
+      case 'email':
+        console.log('### ', searchTerm, criteria);
+        break;
+      case 'city':
+        console.log('### ', searchTerm, criteria);
+        break;
+      default:
+        break;
+    }
+    // const results = data.filter(
+    //   (reservation) =>
+    //     reservation.first_name.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
+    // setSearchResults(results);
   };
 
   const handleClear = () => {
@@ -89,6 +107,7 @@ const SearchReservation: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        <RecRadioButtons value={criteria} onChange={handleCriteriaChange} />
         <Button variant="contained" onClick={handleSearch}>
           Search
         </Button>

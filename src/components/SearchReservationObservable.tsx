@@ -18,6 +18,7 @@ import { ReservationApi } from './types';
 // import dataHardCoded from '../data/reservations.json';
 import ReservationModal from './ReservationModal';
 
+
 const API_URL = 'https://2wrdmmy1m7.execute-api.us-east-1.amazonaws.com/prod/read'
 
 const SearchReservation: React.FC = () => {
