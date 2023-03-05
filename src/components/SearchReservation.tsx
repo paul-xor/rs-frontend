@@ -21,7 +21,7 @@ const API_URL_READ = 'https://2wrdmmy1m7.execute-api.us-east-1.amazonaws.com/pro
 const API_URL_SERCH = 'https://33ye23ukr3.execute-api.us-east-1.amazonaws.com/prod/search/'
 
 const SearchReservation: React.FC = () => {
-  const [data, setData] = useState<ReservationApi[]| null>([]);
+  const [data, setData] = useState<ReservationApi[] | null>([]);
   const [init, setInit] = useState<boolean>(true);
   const [criteria, setCriteria] = useState('firstName');
 
@@ -29,21 +29,21 @@ const SearchReservation: React.FC = () => {
   const [selectedReservation, setSelectedReservation] = useState<ReservationApi | null>(null);
   const [open, setOpen] = useState(false)
   const [{ response, isLoading, error }, doFetch]: UseFetchReturn = useFetch(API_URL_READ);
-  const [{ response: resp, loading,  error: err }, doQuery]: UseFetchModReturn = useFetchMode();
+  const [{ response: resp, loading, error: err }, doQuery]: UseFetchModReturn = useFetchMode();
 
 
-  useEffect (() => {
-    if(init) {
+  useEffect(() => {
+    if (init) {
       setInit(false);
       doFetch();
     }
   }, [doFetch, init]);
 
-  useEffect (() => {
-    if(response && !isLoading) {
+  useEffect(() => {
+    if (response && !isLoading) {
       setData(response)
     }
-    if(resp) {
+    if (resp) {
       setData(resp)
     }
   }, [response, isLoading, resp])
@@ -67,6 +67,7 @@ const SearchReservation: React.FC = () => {
 
   const handleClear = () => {
     setSearchTerm('');
+    setData([]);
   }
 
   const handleRowClick = (reservation: ReservationApi | null) => {
@@ -88,13 +89,16 @@ const SearchReservation: React.FC = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <RecRadioButtons value={criteria} onChange={handleCriteriaChange} />
-        <Button variant="contained" onClick={handleSearch}>
+        <Button variant="contained" onClick={handleSearch} disabled={!searchTerm}>
           Search
         </Button>
         <Button variant="contained" onClick={handleClear}>
           Clear
         </Button>
       </div>
+
+      {error && <h2>Can't fetch data</h2>}
+      {err && <h2>Can't search data</h2>}
 
       <TableContainer component={Paper}>
         <Table>
