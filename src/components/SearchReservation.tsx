@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useFetch, { UseFetchReturn } from '../hooks/useFetch';
+import useFetchMode, { UseFetchModReturn } from '../hooks/useFetchMode';
 
 import {
   TextField,
@@ -13,7 +14,6 @@ import {
   Paper,
 } from '@mui/material';
 import { ReservationApi } from './types';
-// import dataHardCoded from '../data/reservations.json';
 import ReservationModal from './ReservationModal';
 import RecRadioButtons from './RecRadioButtons';
 
@@ -26,15 +26,14 @@ const SearchReservation: React.FC = () => {
   const [criteria, setCriteria] = useState('firstName');
 
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<ReservationApi[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<ReservationApi | null>(null);
   const [open, setOpen] = useState(false)
   const [{ response, isLoading, error }, doFetch]: UseFetchReturn = useFetch(API_URL_READ);
+  const [{ response: resp, loading,  error: err }, doQuery]: UseFetchModReturn = useFetchMode();
 
 
   useEffect (() => {
     if(init) {
-      console.log('!! doFetch !!')
       setInit(false);
       doFetch();
     }
@@ -43,11 +42,13 @@ const SearchReservation: React.FC = () => {
   useEffect (() => {
     if(response && !isLoading) {
       setData(response)
-      setSearchResults(response)
     }
-  }, [response, isLoading])
+    if(resp) {
+      setData(resp)
+    }
+  }, [response, isLoading, resp])
 
-  if (isLoading) {
+  if (isLoading || loading) {
     return <div>Loading...</div>;
   }
 
@@ -60,33 +61,12 @@ const SearchReservation: React.FC = () => {
   };
 
   const handleSearch = () => {
-    // console.log('## criteria: ', criteria)
-    switch (criteria) {
-      case 'firstName':
-        console.log('### ', searchTerm, criteria);
-        break;
-      case 'lastName':
-        console.log('### ', searchTerm, criteria);
-        break;
-      case 'email':
-        console.log('### ', searchTerm, criteria);
-        break;
-      case 'city':
-        console.log('### ', searchTerm, criteria);
-        break;
-      default:
-        break;
-    }
-    // const results = data.filter(
-    //   (reservation) =>
-    //     reservation.first_name.toLowerCase().includes(searchTerm.toLowerCase())
-    // );
-    // setSearchResults(results);
+    console.log(`${API_URL_SERCH}?search=${searchTerm}&criteria=${criteria}`)
+    doQuery(`${API_URL_SERCH}?search=${searchTerm}&criteria=${criteria}`)
   };
 
   const handleClear = () => {
     setSearchTerm('');
-    setSearchResults([]);
   }
 
   const handleRowClick = (reservation: ReservationApi | null) => {
@@ -127,12 +107,13 @@ const SearchReservation: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {searchResults.map((reservation, index) => (
+            {data.map((reservation, index) => (
               <TableRow key={index} onClick={() => handleRowClick(reservation)}>
                 <TableCell>{reservation.first_name}</TableCell>
                 <TableCell>{reservation.last_name}</TableCell>
                 <TableCell>{reservation.email}</TableCell>
                 <TableCell>{reservation.phone}</TableCell>
+                <TableCell>{reservation.city}</TableCell>
               </TableRow>
             ))}
           </TableBody>
