@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import useFetch, { UseFetchReturn } from '../hooks/useFetch';
+import { ajax } from 'rxjs/ajax';
+import { from } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import {
   TextField,
@@ -16,41 +18,36 @@ import { ReservationApi } from './types';
 // import dataHardCoded from '../data/reservations.json';
 import ReservationModal from './ReservationModal';
 
-const API_URL_READ = 'https://2wrdmmy1m7.execute-api.us-east-1.amazonaws.com/prod/read'
+const API_URL = 'https://2wrdmmy1m7.execute-api.us-east-1.amazonaws.com/prod/read'
 
 const SearchReservation: React.FC = () => {
-  const [data, setData] = useState<ReservationApi[]| null>([]);
-  const [init, setInit] = useState<boolean>(true);
+  const [data, setData] = useState<ReservationApi[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchResults, setSearchResults] = useState<ReservationApi[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<ReservationApi | null>(null);
   const [open, setOpen] = useState(false)
-  const [{ response, isLoading, error }, doFetch]: UseFetchReturn = useFetch(API_URL_READ);
-
-  useEffect (() => {
-    if(init) {
-      console.log('!! doFetch !!')
-      setInit(false);
-      doFetch();
-    }
-  }, [doFetch, init]);
-
-  useEffect (() => {
-    if(response && !isLoading) {
-      setData(response)
-      setSearchResults(response)
-    }
-  }, [response, isLoading])
+  // const reservations = dataHardCoded;
 
   useEffect(() => {
-    // console.log('## searchTerm', searchTerm)
-  }, [searchTerm])
+    setLoading(true);
 
-  console.log('## hook:', response, isLoading, error);
+    const subscription = from(
+      ajax.getJSON<ReservationApi[]>(API_URL)
+    )
+      .pipe(map((response: ReservationApi[]) => response.slice(0, 15)))
+      .subscribe((response: ReservationApi[]) => {
+        setData(response);
+        setLoading(false);
+      });
 
-  if (isLoading) {
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  if (loading) {
     return <div>Loading...</div>;
   }
 
@@ -58,9 +55,11 @@ const SearchReservation: React.FC = () => {
     return null;
   }
 
+
+
   const handleSearch = () => {
     const results = data.filter(
-      (reservation) =>
+      (reservation: any) =>
         reservation.first_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setSearchResults(results);
@@ -82,20 +81,18 @@ const SearchReservation: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-        <TextField
-          label="Search"
-          variant="outlined"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Button variant="contained" onClick={handleSearch}>
-          Search
-        </Button>
-        <Button variant="contained" onClick={handleClear}>
-          Clear
-        </Button>
-      </div>
+      <TextField
+        label="Search"
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <Button variant="contained" onClick={handleSearch}>
+        Search
+      </Button>
+      <Button variant="contained" onClick={handleClear}>
+        Clear
+      </Button>
 
       <TableContainer component={Paper}>
         <Table>
