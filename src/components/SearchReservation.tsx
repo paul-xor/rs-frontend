@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import useFetch, { UseFetchReturn } from '../hooks/useFetch';
 import useFetchMode, { UseFetchModReturn } from '../hooks/useFetchMode';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, from, mergeMap } from 'rxjs';
 
 import {
   TextField,
@@ -18,19 +19,49 @@ import ReservationModal from './ReservationModal';
 import RecRadioButtons from './RecRadioButtons';
 
 const API_URL_READ = 'https://2wrdmmy1m7.execute-api.us-east-1.amazonaws.com/prod/read'
-const API_URL_SERCH = 'https://33ye23ukr3.execute-api.us-east-1.amazonaws.com/prod/search/'
+const API_URL_SEARCH = 'https://33ye23ukr3.execute-api.us-east-1.amazonaws.com/prod/search/'
+
+const getSearchByCreteria = async (search: string, criteria: string) => {
+  const { body: reservations } = await fetch(
+    `${API_URL_SEARCH}?search=${search}&criteria=${criteria}`
+    )
+    .then(res => res.json())
+  console.log('### reservations: ', reservations)
+  return reservations;
+}
+
+let searchSubject = new BehaviorSubject('');
+
+const useObservable = (observable: any, setter: any) => {
+  useEffect(() => {
+    let subscription = observable.subscribe((result: any) => {
+      setter(result)
+    });
+    return () => subscription.unsubscribe()
+  }, [observable, setter])
+}
 
 const SearchReservation: React.FC = () => {
   const [data, setData] = useState<ReservationApi[] | null>([]);
   const [init, setInit] = useState<boolean>(true);
   const [criteria, setCriteria] = useState('firstName');
 
+  const [search, setSearch] = useState<string>('');
+
+  let searchResultObservable = searchSubject.pipe(
+    filter(val => val.length > 1),
+    debounceTime(700),
+    distinctUntilChanged(),
+    mergeMap(val => from(getSearchByCreteria(val, criteria)))
+  )
+
+  useObservable(searchResultObservable, setData);
+
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedReservation, setSelectedReservation] = useState<ReservationApi | null>(null);
   const [open, setOpen] = useState(false)
   const [{ response, isLoading, error }, doFetch]: UseFetchReturn = useFetch(API_URL_READ);
   const [{ response: resp, loading, error: err }, doQuery]: UseFetchModReturn = useFetchMode();
-
 
   useEffect(() => {
     if (init) {
@@ -61,8 +92,8 @@ const SearchReservation: React.FC = () => {
   };
 
   const handleSearch = () => {
-    console.log(`${API_URL_SERCH}?search=${searchTerm}&criteria=${criteria}`)
-    doQuery(`${API_URL_SERCH}?search=${searchTerm}&criteria=${criteria}`)
+    console.log(`${API_URL_SEARCH}?search=${searchTerm}&criteria=${criteria}`)
+    doQuery(`${API_URL_SEARCH}?search=${searchTerm}&criteria=${criteria}`)
   };
 
   const handleClear = () => {
@@ -78,6 +109,14 @@ const SearchReservation: React.FC = () => {
   const handleClose = () => {
     setOpen(false);
   }
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    searchSubject.next(newValue);
+    setSearch(newValue);
+
+  }
+  console.log('##: search: ', search);
 
   return (
     <div>
@@ -95,6 +134,12 @@ const SearchReservation: React.FC = () => {
         <Button variant="contained" onClick={handleClear}>
           Clear
         </Button>
+        <TextField
+          label="SearchRxJS"
+          variant="outlined"
+          value={search}
+          onChange={handleSearchChange}
+        />
       </div>
 
       {error && <h2>Can't fetch data</h2>}
